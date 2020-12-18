@@ -1,11 +1,13 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
 
+const port = process.env.PORT || 3000
 const server: FastifyInstance<
   Server,
   IncomingMessage,
   ServerResponse
 > = fastify({
+  ignoreTrailingSlash: true,
   logger: {
     prettyPrint: { colorize: true }
   }
@@ -14,13 +16,13 @@ const server: FastifyInstance<
 server.get(
   '/',
   async (request?, reply?): Promise<Object> => {
-    return { hello: 'world' }
+    return { hello: 'world! 🙂' }
   }
 )
 
 const start = async () => {
   try {
-    await server.listen(3000)
+    await server.listen(port)
   } catch (err) {
     server.log.error(err)
     process.exit(1)

@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
 
@@ -16,7 +18,7 @@ const server: FastifyInstance<
 server.get(
   '/',
   async (request?, reply?): Promise<Object> => {
-    return { hello: 'world! 🙂' }
+    return { hello: 'world! 🙂', testEnv: process.env.TEST_ENV }
   }
 )
 

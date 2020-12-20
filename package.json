@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "tsc && nodemon src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "init-env": "printenv > .env"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/codebynao/the8thavenue-api#readme",
   "dependencies": {
+    "dotenv": "^8.2.0",
     "fastify": "^3.9.2",
     "pino-pretty": "^4.3.0",
     "ts-node": "^9.1.1",

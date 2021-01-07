@@ -64,6 +64,9 @@ steps:
     args: ['run', 'init-env']
     env:
       - TEST_ENV=$_TEST_ENV
+      - CDN_CLOUD_NAME=$_CDN_CLOUD_NAME
+      - CDN_API_KEY=$_CDN_API_KEY
+      - CDN_API_SECRET=$_CDN_API_SECRET
   - name: 'gcr.io/cloud-builders/npm'
     args: ['run', 'build']
   - name: 'gcr.io/cloud-builders/gcloud'

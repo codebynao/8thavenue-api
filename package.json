@@ -20,9 +20,11 @@
   },
   "homepage": "https://github.com/codebynao/the8thavenue-api#readme",
   "dependencies": {
+    "@types/mongoose": "^5.10.3",
     "cloudinary": "^1.23.0",
     "dotenv": "^8.2.0",
     "fastify": "^3.9.2",
+    "mongoose": "^5.11.10",
     "pino-pretty": "^4.3.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"

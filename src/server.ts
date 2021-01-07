@@ -2,8 +2,12 @@ require('dotenv').config()
 
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
+import mongoose from 'mongoose'
 
+const MONGO_URI = process.env.MONGO_URI || ''
 const port = process.env.PORT || 3000
+
+// Initialize the server
 const server: FastifyInstance<
   Server,
   IncomingMessage,
@@ -15,6 +19,7 @@ const server: FastifyInstance<
   }
 })
 
+// Routes
 server.get(
   '/',
   async (request?, reply?): Promise<Object> => {
@@ -30,6 +35,15 @@ const start = async () => {
     process.exit(1)
   }
 }
+
+// Connect the DB
+mongoose
+  .connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => server.log.info('MongoDB connected...'))
+  .catch((err: any) => server.log.error(err))
 
 process.on('uncaughtException', (error) => {
   console.error(error)

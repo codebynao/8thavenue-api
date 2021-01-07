@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 const MONGO_URI = process.env.MONGO_URI || ''
 const port = process.env.PORT || 3000
 
+console.log('ENV', process.env)
 // Initialize the server
 const server: FastifyInstance<
   Server,

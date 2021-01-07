@@ -46,37 +46,96 @@
 #   - gcp-cloud-build-deploy-cloud-run-managed
 #   - continuous-deployment
 
+# steps:
+#   - name: gcr.io/k8s-skaffold/pack
+#     env:
+#       - GOOGLE_ENTRYPOINT=$_ENTRYPOINT
+#     args:
+#       - build
+#       - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+#       - '--builder=gcr.io/buildpacks/builder:v1'
+#       - '--path=.'
+#       - '--env=GOOGLE_ENTRYPOINT'
+#     id: Buildpack
+#     entrypoint: pack
+#   - name: 'gcr.io/cloud-builders/npm'
+#     args: ['install']
+#   - name: 'gcr.io/cloud-builders/npm'
+#     args: ['run', 'init-env']
+#     env:
+#       - TEST_ENV=$_TEST_ENV
+#       - CDN_CLOUD_NAME=$_CDN_CLOUD_NAME
+#       - CDN_API_KEY=$_CDN_API_KEY
+#       - CDN_API_SECRET=$_CDN_API_SECRET
+#       - MONGO_URI=$_MONGO_URI
+#   - name: 'gcr.io/cloud-builders/npm'
+#     args: ['run', 'build']
+#   - name: gcr.io/cloud-builders/docker
+#     args:
+#       - push
+#       - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+#     id: Push
+#   - name: 'gcr.io/cloud-builders/gcloud'
+#     args: ['app', 'deploy']
+# images:
+#   - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+# options:
+#   substitutionOption: ALLOW_LOOSE
+# substitutions:
+#   _SERVICE_NAME: continuous-deployment
+#   _ENTRYPOINT: node src/server.ts
+#   _DEPLOY_REGION: europe-west1
+#   _GCR_HOSTNAME: eu.gcr.io
+#   _LABELS: gcb-trigger-id=a7b3a63f-7716-4957-8f16-cb2b612ecce3
+#   _TRIGGER_ID: a7b3a63f-7716-4957-8f16-cb2b612ecce3
+#   _PLATFORM: managed
+# tags:
+#   - gcp-cloud-build-deploy-cloud-run
+#   - gcp-cloud-build-deploy-cloud-run-managed
+#   - continuous-deployment
+
 steps:
-  - name: gcr.io/k8s-skaffold/pack
-    env:
-      - GOOGLE_ENTRYPOINT=$_ENTRYPOINT
+  # build the container image
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - build
+      - 'build'
+      - '--build-arg'
+      - '_CDN_CLOUD_NAME=$_CDN_CLOUD_NAME'
+      - '--build-arg'
+      - '_CDN_API_KEY=$_CDN_API_KEY'
+      - '--build-arg'
+      - '_CDN_API_SECRET=$_CDN_API_SECRET'
+      - '--build-arg'
+      - '_MONGO_URI=$_MONGO_URI'
+      - '--build-arg'
+      - '_TEST_ENV=COUCOU'
+      - '-t'
       - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
-      - '--builder=gcr.io/buildpacks/builder:v1'
-      - '--path=.'
-      - '--env=GOOGLE_ENTRYPOINT'
-    id: Buildpack
-    entrypoint: pack
+      - '.'
+    id: Build
+    # push the container image to Container Registry
   - name: gcr.io/cloud-builders/docker
     args:
       - push
       - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
     id: Push
-  - name: 'gcr.io/cloud-builders/npm'
-    args: ['install']
-  - name: 'gcr.io/cloud-builders/npm'
-    args: ['run', 'init-env']
+    # deploy container image to Cloud Run
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    args:
+      - run
+      - services
+      - update
+      - $_SERVICE_NAME
+      - '--platform=managed'
+      - '--image=$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID,$_LABELS
+      - '--region=$_DEPLOY_REGION'
+      - '--quiet'
+    id: Deploy
+    entrypoint: gcloud
     env:
-      - TEST_ENV=$_TEST_ENV
-      - CDN_CLOUD_NAME=$_CDN_CLOUD_NAME
-      - CDN_API_KEY=$_CDN_API_KEY
-      - CDN_API_SECRET=$_CDN_API_SECRET
-      - MONGO_URI=$_MONGO_URI
-  - name: 'gcr.io/cloud-builders/npm'
-    args: ['run', 'build']
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['app', 'deploy']
+      - PORT=8080
 images:
   - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
 options:

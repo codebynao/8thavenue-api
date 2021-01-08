@@ -1,8 +1,8 @@
-require('dotenv').config()
-
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
 import mongoose from 'mongoose'
+
+require('dotenv').config()
 
 const MONGO_URI = process.env.MONGO_URI || ''
 const port = process.env.PORT || 3000

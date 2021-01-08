@@ -2,23 +2,37 @@
   "name": "the8thavenue-api",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server.ts",
-  "scripts": {
-    "start": "NODE_ENV=production node dist/server.js",
-    "dev": "tsc && nodemon src/server.ts",
-    "build": "tsc",
-    "init-env": "printenv > .env"
+  "homepage": "https://github.com/codebynao/the8thavenue-api#readme",
+  "bugs": {
+    "url": "https://github.com/codebynao/the8thavenue-api/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/codebynao/the8thavenue-api.git"
   },
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/codebynao/the8thavenue-api/issues"
+  "author": "",
+  "main": "src/server.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc && nodemon src/server.ts",
+    "format": "npm run lint -- --fix",
+    "init-env": "printenv > .env",
+    "lint": "eslint --cache --ext .js,.ts .",
+    "start": "NODE_ENV=production node dist/server.js"
   },
-  "homepage": "https://github.com/codebynao/the8thavenue-api#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --cache --ext .js,.ts  . --fix",
+      "git add ."
+    ]
+  },
   "dependencies": {
     "@types/mongoose": "^5.10.3",
     "cloudinary": "^1.23.0",
@@ -30,6 +44,17 @@
     "typescript": "^4.1.3"
   },
   "devDependencies": {
-    "@types/node": "^14.14.14"
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "@types/node": "^14.14.14",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "eslint": "^7.17.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "husky": "^4.3.7",
+    "lint-staged": "^10.5.3"
   }
 }

@@ -27,7 +27,7 @@ server.get(
   }
 )
 
-// Start server
+// Function to start server
 const start = async () => {
   try {
     await server.listen(port, '0.0.0.0')
@@ -54,4 +54,5 @@ process.on('unhandledRejection', (error) => {
   console.error(error)
 })
 
+// Start server
 start()

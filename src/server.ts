@@ -1,6 +1,7 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
 import mongoose from 'mongoose'
+import categoryHandler from './routes/category'
 
 require('dotenv').config()
 
@@ -26,6 +27,7 @@ server.get(
     return { hello: 'world! 🙂', testEnv: process.env.TEST_ENV }
   }
 )
+server.register(categoryHandler, { prefix: '/categories' })
 
 // Function to start server
 const start = async () => {

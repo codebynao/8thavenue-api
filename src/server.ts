@@ -27,6 +27,7 @@ server.get(
   }
 )
 
+// Start server
 const start = async () => {
   try {
     await server.listen(port, '0.0.0.0')

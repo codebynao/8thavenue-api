@@ -7,7 +7,6 @@ import mongoose from 'mongoose'
 const MONGO_URI = process.env.MONGO_URI || ''
 const port = process.env.PORT || 3000
 
-console.log('ENV', process.env)
 // Initialize the server
 const server: FastifyInstance<
   Server,
@@ -28,9 +27,10 @@ server.get(
   }
 )
 
+// Function to start server
 const start = async () => {
   try {
-    await server.listen(port)
+    await server.listen(port, '0.0.0.0')
   } catch (err) {
     server.log.error(err)
     process.exit(1)
@@ -54,4 +54,5 @@ process.on('unhandledRejection', (error) => {
   console.error(error)
 })
 
+// Start server
 start()

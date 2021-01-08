@@ -25,9 +25,6 @@ ENV CDN_API_KEY $_CDN_API_KEY
 ENV CDN_API_SECRET $_CDN_API_SECRET
 ENV MONGO_URI $_MONGO_URI
 ENV TEST_ENV $_TEST_ENV
-ENV NEW_TEST This is a test
-
-RUN echo $MONGO_URI
 
 # On copie les sources compilées depuis la première étape
 COPY --from=tsc-builder /usr/src/app/dist ./dist
@@ -38,3 +35,5 @@ RUN yarn install --prod
 
 # Start
 CMD yarn run start
+
+EXPOSE 8080

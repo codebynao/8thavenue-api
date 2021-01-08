@@ -1,6 +1,6 @@
-let cloudinary = require('cloudinary').v2
+const cloudinary = require('cloudinary').v2
 
-//setup cloudinary config
+// setup cloudinary config
 cloudinary.config({
   cloud_name: process.env.CDN_CLOUD_NAME,
   api_key: process.env.CDN_API_KEY,

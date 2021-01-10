@@ -11,5 +11,4 @@ const CategorySchema: Schema = new Schema(
   }
 )
 
-// Exports the model and returns the interface
 export default model<ICategory>('Category', CategorySchema)

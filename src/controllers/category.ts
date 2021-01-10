@@ -77,7 +77,7 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     await CategoryModel.deleteOne({ _id: request.params.id })
     reply.send(true)
   } catch (error) {
-    console.error('error update category: ', error)
+    console.error('error delete category: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }

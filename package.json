@@ -29,8 +29,7 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --cache --ext .js,.ts  . --fix",
-      "git add ."
+      "eslint --cache --ext .js,.ts  . --fix"
     ]
   },
   "dependencies": {

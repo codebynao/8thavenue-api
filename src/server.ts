@@ -3,6 +3,7 @@ import { IncomingMessage, Server, ServerResponse } from 'http'
 import mongoose from 'mongoose'
 import categoryHandler from './routes/category'
 import userHandler from './routes/user'
+import photoHandler from './routes/photo'
 
 require('dotenv').config()
 
@@ -30,6 +31,7 @@ server.get(
 )
 server.register(categoryHandler, { prefix: '/categories' })
 server.register(userHandler, { prefix: '/users' })
+server.register(photoHandler, { prefix: '/photos' })
 
 // Function to start server
 const start = async () => {

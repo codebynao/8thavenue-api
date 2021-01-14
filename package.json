@@ -33,8 +33,10 @@
     ]
   },
   "dependencies": {
+    "@types/crypto-js": "^4.0.1",
     "@types/mongoose": "^5.10.3",
     "cloudinary": "^1.23.0",
+    "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",
     "fastify": "^3.9.2",
     "mongoose": "^5.11.10",

@@ -52,7 +52,8 @@ export default (server: FastifyInstance, options: Object, next: Function) => {
       schema: {
         body: bodySchema,
         response: responsePostSchema
-      }
+      },
+      preHandler: [server.authenticate]
     },
     photoController.post
   )
@@ -63,10 +64,16 @@ export default (server: FastifyInstance, options: Object, next: Function) => {
         params: paramsSchema,
         body: bodyUpdateSchema,
         response: responseSchema
-      }
+      },
+      preHandler: [server.authenticate]
     },
     photoController.update
   )
-  server.delete('/:id', photoController.remove)
+  server.delete('/:id', {
+    schema: {
+      params: paramsSchema
+    },
+    preHandler: [server.authenticate]
+  }, photoController.remove)
   next()
 }

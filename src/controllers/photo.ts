@@ -39,6 +39,12 @@ const getAll = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
 const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
+    const credentials: any = request.user
+    if (!credentials.id || credentials.id !== request.body.user) {
+      reply.status(401)
+      return reply.send('Not authorised')
+    }
+
     const hash = md5(Date.now() + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5))
     const fileEncoded : string = request.body.fileEncoded
     const uploadResponse = await cloudinary.uploader.upload(fileEncoded, {
@@ -65,6 +71,12 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
 const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
+    const credentials: any = request.user
+    if (!credentials.id || credentials.id !== request.body.user) {
+      reply.status(401)
+      return reply.send('Not authorised')
+    }
+
     let photo = await PhotoModel.findById(request.params.id)
     if (!photo) {
       reply.status(404)
@@ -83,15 +95,23 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
 const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
-    const photo = await PhotoModel.findById(request.params.id).lean()
+    const photo = await PhotoModel.findById(request.params.id, 'user').lean()
     if (!photo) {
       reply.status(404)
       reply.send('Photo not found')
     }
+
+    const credentials: any = request.user
+    console.log(credentials, photo)
+    if (!credentials.id || credentials.id !== photo.user.toString()) {
+      reply.status(401)
+      return reply.send('Not authorised')
+    }
+
     await PhotoModel.deleteOne({ _id: request.params.id })
     reply.send(true)
   } catch (error) {
-    console.error('error update photo: ', error)
+    console.error('error delete photo: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }

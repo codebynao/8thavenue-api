@@ -4,7 +4,7 @@ import { LINKS_NAMES } from '../../config/constants'
 import User from './index'
 
 const FreelanceSchema: Model<IFreelance> = User.discriminator(
-  'freelance',
+  'userType',
   new Schema({
     photos: {
       type: [
@@ -58,7 +58,7 @@ const FreelanceSchema: Model<IFreelance> = User.discriminator(
       default: []
     }
   }),
-  'userType'
+  'freelance'
 )
 
 export default FreelanceSchema

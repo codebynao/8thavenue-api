@@ -1,9 +1,11 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
 import mongoose from 'mongoose'
+import authHandler from './routes/auth'
 import categoryHandler from './routes/category'
-import userHandler from './routes/user'
 import photoHandler from './routes/photo'
+import userHandler from './routes/user'
+import authPlugin from './plugins/auth'
 
 require('dotenv').config()
 
@@ -22,16 +24,19 @@ const server: FastifyInstance<
   }
 })
 
-// Routes
-server.get(
-  '/',
-  async (request?, reply?): Promise<Object> => {
-    return { hello: 'world! 🙂', testEnv: process.env.TEST_ENV }
-  }
-)
-server.register(categoryHandler, { prefix: '/categories' })
-server.register(userHandler, { prefix: '/users' })
-server.register(photoHandler, { prefix: '/photos' })
+server.register(authPlugin).then(() => {
+  // Routes
+  server.get(
+    '/',
+    async (request?, reply?): Promise<Object> => {
+      return { hello: 'world! 🙂' }
+    }
+  )
+  server.register(authHandler, { prefix: '/auth' })
+  server.register(categoryHandler, { prefix: '/categories' })
+  server.register(photoHandler, { prefix: '/photos' })
+  server.register(userHandler, { prefix: '/users' })
+})
 
 // Function to start server
 const start = async () => {

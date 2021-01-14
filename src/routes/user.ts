@@ -108,13 +108,15 @@ export default (server: FastifyInstance, options: Object, next: Function) => {
       body: {
         anyOf: [userBodySchema, freelanceBodySchema]
       }
-    }
+    },
+    preHandler: [server.authenticate]
   }, userController.update)
 
   server.delete('/:id', {
     schema: {
       params: paramsSchema
-    }
+    },
+    preHandler: [server.authenticate]
   }, userController.deactivate)
 
   next()

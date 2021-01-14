@@ -15,7 +15,8 @@ const UserSchema: Schema = new Schema(
     isVerified: { type: Boolean, default: false },
     lastConnection: { type: Date, default: Date.now },
     password: { type: String, required: true, min: MIN_PASSWORD_LENGTH },
-    isDeactivated: { type: Boolean, default: false }
+    isDeactivated: { type: Boolean, default: false },
+    dateDeactivation: { type: Date, default: undefined }
   },
   {
     discriminatorKey: 'userType',

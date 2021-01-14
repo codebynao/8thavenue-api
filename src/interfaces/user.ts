@@ -17,6 +17,7 @@ export interface IUser extends Document {
   createdAt?: Date,
   updatedAt?: Date,
   isDeactivated?: boolean
+  dateDeactivation?: Date
 }
 
 export interface IFreelance extends IUser {
@@ -49,4 +50,10 @@ export interface ISignUp {
   lastName: string
   email: string
   password: string
+}
+
+export interface ICredentials {
+  id: string
+  email: string
+  iat: number
 }

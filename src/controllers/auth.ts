@@ -11,7 +11,7 @@ type LoginFastifyRequest = FastifyRequest<{
 
 const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise<void> => {
   try {
-    const user = await UserModel.findOne({ email: request.body.email }).select({ __v: 0, createdAt: 0, updatedAt: 0, dateDeactivation: 0 }).lean()
+    let user = await UserModel.findOne({ email: request.body.email }).select({ __v: 0, createdAt: 0, updatedAt: 0, dateDeactivation: 0 })
 
     // Check if user credentials are valid
     if (!user || !bcrypt.compareSync(request.body.password, user.password)) {
@@ -24,6 +24,11 @@ const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise
 
     // Generate JWT token
     const token = await reply.jwtSign({ id: user._id, email: user.email })
+
+    user.lastConnection = new Date()
+    await user.save()
+
+    user = user.toJSON()
     delete user.password
     delete user.isDeactivated
 

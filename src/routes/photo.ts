@@ -1,5 +1,6 @@
 import photoController from '../controllers/photo'
 import { FastifyInstance } from 'fastify'
+import { LIMIT_QUERY_RESULTS } from '../config/constants'
 
 const photoSchema = {
   _id: { type: 'string' },
@@ -45,7 +46,17 @@ const responsePostSchema = {
 }
 
 export default (server: FastifyInstance, options: Object, next: Function) => {
-  server.get('/', photoController.getAll)
+  server.get('/', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', default: LIMIT_QUERY_RESULTS },
+          page: { type: 'number', default: 1 }
+        }
+      }
+    }
+  }, photoController.getAll)
   server.post(
     '/',
     {

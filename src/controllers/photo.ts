@@ -24,14 +24,23 @@ type ExtendedFastifyRequest = FastifyRequest<{
   }
 }>
 
+type QueryFastifyRequest = FastifyRequest<{
+  Querystring: {
+    limit: number,
+    page: number
+  }
+}>
 /**
  * CONTROLLER
  */
-const getAll = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
+const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
   try {
-    reply.send(await PhotoModel.find({}, '-__v').populate('categories', '-__v').populate('user', '-__v').lean())
+    const { limit, page } = request.query
+    const skip: number = limit * (page - 1)
+
+    reply.send(await PhotoModel.find({}, '-__v -createdAt -updatedAt').populate('categories', '-__v -createdAt -updatedAt').populate('user', '-__v -createdAt -updatedAt').skip(skip).limit(limit).sort({ createdAt: -1 }).lean())
   } catch (error) {
-    console.error('error getAll photos: ', error)
+    reply.log.error('error getAll photos: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -52,7 +61,7 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     })
 
     if (uploadResponse.url === undefined) {
-      console.error(uploadResponse)
+      reply.log.error(uploadResponse)
       reply.status(500)
       reply.send({ success: false, error: 'Error while uploading the image' })
       return
@@ -63,7 +72,7 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     delete photo.__v
     reply.send(photo)
   } catch (error) {
-    console.error('error add photo: ', error)
+    reply.log.error('error add photo: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -87,7 +96,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
     reply.send(photo)
   } catch (error) {
-    console.error('error update photo: ', error)
+    reply.log.error('error update photo: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -102,7 +111,6 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     }
 
     const credentials: any = request.user
-    console.log(credentials, photo)
     if (!credentials.id || credentials.id !== photo.user.toString()) {
       reply.status(401)
       return reply.send('Not authorised')
@@ -111,7 +119,7 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     await PhotoModel.deleteOne({ _id: request.params.id })
     reply.send(true)
   } catch (error) {
-    console.error('error delete photo: ', error)
+    reply.log.error('error delete photo: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }

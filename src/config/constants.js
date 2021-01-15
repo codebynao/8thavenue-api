@@ -12,6 +12,7 @@ const config = {
       price: '20'
     }
   },
+  LIMIT_QUERY_RESULTS: 20,
   LINKS_NAMES: ['website', 'instagram', 'twitter', 'pinterest'],
   MIN_PASSWORD_LENGTH: 8,
   USER_TYPES: {

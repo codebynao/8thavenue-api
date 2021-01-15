@@ -34,7 +34,7 @@ const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise
 
     reply.send({ token, user })
   } catch (error) {
-    console.error('error login user: ', error)
+    reply.log.error('error login user: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }

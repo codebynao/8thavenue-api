@@ -33,7 +33,7 @@ const getAll = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     reply.send(await UserModel.find({ isDeactivated: false }).select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 }).lean())
   } catch (error) {
-    console.error('error getAll users: ', error)
+    reply.log.error('error getAll users: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -50,7 +50,7 @@ const getOne = async (request: IdParamRequest, reply: FastifyReply) => {
     }
     reply.send(user)
   } catch (error) {
-    console.error('error get user: ', error)
+    reply.log.error('error get user: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -83,7 +83,7 @@ const signUp = async (request: SignUpRequest, reply: FastifyReply) => {
 
     reply.send({ token, user })
   } catch (error) {
-    console.error('error sign up user: ', error)
+    reply.log.error('error sign up user: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -119,7 +119,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
     reply.send(updatedUser)
   } catch (error) {
-    console.error('error update user: ', error)
+    reply.log.error('error update user: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -142,7 +142,7 @@ const deactivate = async (request: ExtendedFastifyRequest, reply: FastifyReply) 
     await UserModel.findByIdAndUpdate({ _id: request.params.id }, { $set: { isDeactivated: true, dateDeactivation: new Date() } })
     reply.send(true)
   } catch (error) {
-    console.error('error deactivate user: ', error)
+    reply.log.error('error deactivate user: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }

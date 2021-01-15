@@ -22,7 +22,7 @@ const getAll = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     reply.send(await CategoryModel.find({}, 'slug isActivated').lean())
   } catch (error) {
-    console.error('error getAll categories: ', error)
+    reply.log.error('error getAll categories: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -37,7 +37,7 @@ const add = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
       isActivated: createdCategory.isActivated
     })
   } catch (error) {
-    console.error('error add category: ', error)
+    reply.log.error('error add category: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -61,7 +61,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
     reply.send(category)
   } catch (error) {
-    console.error('error update category: ', error)
+    reply.log.error('error update category: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }
@@ -77,7 +77,7 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     await CategoryModel.deleteOne({ _id: request.params.id })
     reply.send(true)
   } catch (error) {
-    console.error('error delete category: ', error)
+    reply.log.error('error delete category: ', error)
     reply.status(500)
     reply.send({ error: error.message })
   }

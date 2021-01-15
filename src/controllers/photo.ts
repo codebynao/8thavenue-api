@@ -1,3 +1,4 @@
+import FreelanceModel from '../models/User/Freelance'
 import PhotoModel from '../models/Photo'
 import { ICategory } from './../interfaces/category'
 import { IUser } from './../interfaces/user'
@@ -68,6 +69,10 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     }
     request.body.url = uploadResponse.url
     const createdPhoto = await PhotoModel.create(request.body)
+
+    // Add photo to the freelance
+    await FreelanceModel.findByIdAndUpdate(createdPhoto.user, { $addToSet: { photos: createdPhoto._id } })
+
     const photo = createdPhoto.toJSON()
     delete photo.__v
     reply.send(photo)
@@ -117,6 +122,10 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     }
 
     await PhotoModel.deleteOne({ _id: request.params.id })
+
+    // Remove photo from the freelance
+    await FreelanceModel.findByIdAndUpdate(photo.user, { $pull: { photos: request.params.id } })
+
     reply.send(true)
   } catch (error) {
     reply.log.error('error delete photo: ', error)

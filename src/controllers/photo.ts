@@ -42,9 +42,17 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
     const photosCount = await PhotoModel.countDocuments()
     const hasMoreResults = photosCount - (limit * page) > 0
 
-    const photos = await PhotoModel.find({}, '-__v -createdAt -updatedAt').populate('categories', '-__v -createdAt -updatedAt').populate('user', '-__v -createdAt -updatedAt').skip(skip).limit(limit).sort({ createdAt: -1 }).lean()
+    const photos = await PhotoModel.find({}, '-__v -createdAt -updatedAt')
+      .populate('categories', '-__v -createdAt -updatedAt')
+      .populate('user', '-__v -createdAt -updatedAt')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .lean()
 
-    reply.send({ photos, hasMoreResults })
+    reply.send({
+      photos, hasMoreResults
+    })
   } catch (error) {
     reply.log.error('error getAll photos: ', error)
     reply.status(500)

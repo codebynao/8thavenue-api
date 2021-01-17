@@ -57,3 +57,17 @@ export interface ICredentials {
   email: string
   iat: number
 }
+
+export interface IUserQueryFilters {
+  limit: number,
+  page: number,
+  remote: boolean,
+  skills: string,
+  specialties: string,
+  isAvailable: boolean,
+  lastConnection: string
+  workDistance: string,
+  dailyCost: string,
+  zipCode: string,
+  country: string
+}

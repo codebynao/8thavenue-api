@@ -1,6 +1,6 @@
 import userController from '../controllers/user'
 import { FastifyInstance } from 'fastify'
-import { FREELANCE_PLANS_VALUES, LINKS_NAMES, MIN_PASSWORD_LENGTH } from '../config/constants'
+import { FREELANCE_PLANS_VALUES, LIMIT_QUERY_RESULTS, LINKS_NAMES, MIN_PASSWORD_LENGTH } from '../config/constants'
 
 const signUpSchema = {
   type: 'object',
@@ -87,8 +87,29 @@ const freelanceBodySchema = {
   required: userBodySchema.required.concat(['photos', 'isAvailable', 'skills', 'workDistance', 'remote', 'biography', 'specialties'])
 }
 
+const queryStringUserSchema = {
+  type: 'object',
+  properties: {
+    limit: { type: 'number', default: LIMIT_QUERY_RESULTS },
+    page: { type: 'number', default: 1 },
+    remote: { type: 'boolean' },
+    isAvailable: { type: 'boolean' },
+    skills: { type: 'string' },
+    specialties: { type: 'string' },
+    lastConnection: { type: 'string' },
+    workDistance: { type: 'string' },
+    dailyCost: { type: 'string' },
+    zipCode: { type: 'string' },
+    country: { type: 'string' }
+  }
+}
+
 export default (server: FastifyInstance, options: Object, next: Function) => {
-  server.get('/', userController.getAll)
+  server.get('/', {
+    schema: {
+      querystring: queryStringUserSchema
+    }
+  }, userController.getAll)
 
   server.get('/:id', userController.getOne)
 

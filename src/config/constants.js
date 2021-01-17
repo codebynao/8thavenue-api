@@ -18,7 +18,8 @@ const config = {
   USER_TYPES: {
     CLIENT: 'client',
     FREELANCE: 'freelance'
-  }
+  },
+  MAX_ALL_USERS_PHOTOS: 6
 }
 
 config.FREELANCE_PLANS_VALUES = Object.values(config.FREELANCE_PLANS).map(plan => plan.value)

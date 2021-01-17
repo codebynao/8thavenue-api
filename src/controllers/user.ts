@@ -1,9 +1,10 @@
-import { ISignUp, IUser, IFreelance, ICredentials } from '../interfaces/user'
+import { ISignUp, IUser, IFreelance, ICredentials, IUserQueryFilters } from '../interfaces/user'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import FreelanceModel from '../models/User/Freelance'
 import UserModel from '../models/User'
-import { USER_TYPES } from '../config/constants'
+import { USER_TYPES, MAX_ALL_USERS_PHOTOS } from '../config/constants'
 import bcrypt from 'bcrypt-nodejs'
+import { getFreelanceQueryFilters } from '../utils/queryFilters'
 
 /**
  * REQUEST TYPES
@@ -26,12 +27,32 @@ type IdParamRequest = FastifyRequest<{
   }
 }>
 
+type QueryFastifyRequest = FastifyRequest<{
+  Querystring: IUserQueryFilters
+}>
+
 /**
  * CONTROLLER
  */
-const getAll = async (request: FastifyRequest, reply: FastifyReply) => {
+const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
+  const { query } = request
+  const { limit, page } = query
+  const skip: number = limit * (page - 1)
+
+  const filters = getFreelanceQueryFilters(query) // we get only necessary filters
+
   try {
-    reply.send(await UserModel.find({ isDeactivated: false }).select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 }).lean())
+    reply.send(await UserModel.find(
+      filters,
+      { photos: { $slice: MAX_ALL_USERS_PHOTOS } } // we set a maximum of `MAX_ALL_USERS_PHOTOS` for photos
+    )
+      .select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 })
+      .populate('photos', '-__v -createdAt -updatedAt')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .lean()
+    )
   } catch (error) {
     reply.log.error('error getAll users: ', error)
     reply.status(500)
@@ -43,7 +64,10 @@ const getOne = async (request: IdParamRequest, reply: FastifyReply) => {
   try {
     const user = await UserModel.findById(
       request.params.id
-    ).select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 }).lean()
+    )
+      .select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 })
+      .populate('photos', '-__v -createdAt -updatedAt')
+      .lean()
     if (!user || user.isDeactivated) {
       reply.status(404)
       return reply.send('User not found')
@@ -71,7 +95,9 @@ const signUp = async (request: SignUpRequest, reply: FastifyReply) => {
 
     const userType = request.body.userType
     delete request.body.userType
-    const userCreated = userType === USER_TYPES.FREELANCE ? await FreelanceModel.create({ ...request.body }) : await UserModel.create({ ...request.body })
+    const userCreated = userType === USER_TYPES.FREELANCE
+      ? await FreelanceModel.create({ ...request.body })
+      : await UserModel.create({ ...request.body })
 
     // We need to transform it to json to be able to remove undesired fields
     const user = userCreated.toJSON()

@@ -29,6 +29,12 @@ const server: FastifyInstance<
   }
 })
 
+// Handle CORS
+server.register(require('fastify-cors'), {
+  origin: '*',
+  methods: ['GET', 'PUT', 'POST', 'DELETE']
+})
+
 server.register(authPlugin).then(() => {
   // Routes
   server.get(

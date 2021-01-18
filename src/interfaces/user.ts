@@ -62,12 +62,18 @@ export interface IUserQueryFilters {
   limit: number,
   page: number,
   remote: boolean,
-  skills: string,
-  specialties: string,
   isAvailable: boolean,
-  lastConnection: string
-  workDistance: string,
-  dailyCost: string,
-  zipCode: string,
-  country: string
+  skills: object, // all mongodb criteria are passed as objects to query filter
+  specialties: object
+  lastConnection: object
+  workDistance: object,
+  dailyCost: object,
+  localisation: {
+    zipCode: string
+    country: string
+    coordinates: {
+      latitude: string,
+      longitude: string
+    }
+  }
 }

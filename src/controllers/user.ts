@@ -4,7 +4,6 @@ import FreelanceModel from '../models/User/Freelance'
 import UserModel from '../models/User'
 import { USER_TYPES, MAX_ALL_USERS_PHOTOS } from '../config/constants'
 import bcrypt from 'bcrypt-nodejs'
-import { getFreelanceQueryFilters } from '../utils/queryFilters'
 
 /**
  * REQUEST TYPES
@@ -36,14 +35,18 @@ type QueryFastifyRequest = FastifyRequest<{
  */
 const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
   const { query } = request
-  const { limit, page } = query
+  const { limit, page, ...filters } = query
   const skip: number = limit * (page - 1)
 
-  const filters = getFreelanceQueryFilters(query) // we get only necessary filters
+  const queryFilters = {
+    ...filters,
+    isDeactivated: false // we ensure to have only non deactivated accounts
+  }
 
   try {
-    reply.send(await UserModel.find(
-      filters,
+    const usersCount = await await UserModel.find(queryFilters).countDocuments()
+    const users = await UserModel.find(
+      queryFilters,
       { photos: { $slice: MAX_ALL_USERS_PHOTOS } } // we set a maximum of `MAX_ALL_USERS_PHOTOS` for photos
     )
       .select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 })
@@ -52,7 +55,9 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
       .limit(limit)
       .sort({ createdAt: -1 })
       .lean()
-    )
+    const hasMoreResults = usersCount - (limit * page) > 0
+
+    reply.send({ users, hasMoreResults })
   } catch (error) {
     reply.log.error('error getAll users: ', error)
     reply.status(500)

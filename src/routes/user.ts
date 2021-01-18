@@ -94,14 +94,27 @@ const queryStringUserSchema = {
     page: { type: 'number', default: 1 },
     remote: { type: 'boolean' },
     isAvailable: { type: 'boolean' },
-    skills: { type: 'string' },
-    specialties: { type: 'string' },
-    lastConnection: { type: 'string' },
-    workDistance: { type: 'string' },
-    dailyCost: { type: 'string' },
-    zipCode: { type: 'string' },
-    country: { type: 'string' }
-  }
+    skills: { type: 'object' },
+    specialties: { type: 'object' },
+    lastConnection: { type: 'object' },
+    workDistance: { type: 'object' },
+    dailyCost: { type: 'object' },
+    localisation: {
+      type: 'object',
+      properties: {
+        zipCode: { type: 'string' },
+        country: { type: 'string' },
+        coordinates: {
+          type: 'object',
+          properties: {
+            latitude: { type: 'number' },
+            longitude: { type: 'number' }
+          }
+        }
+      }
+    }
+  },
+  additionalProperties: false
 }
 
 export default (server: FastifyInstance, options: Object, next: Function) => {

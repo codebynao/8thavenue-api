@@ -1,11 +1,13 @@
 import fastify, { FastifyInstance } from 'fastify'
 import { IncomingMessage, Server, ServerResponse } from 'http'
 import mongoose from 'mongoose'
+
 import authHandler from './routes/auth'
 import categoryHandler from './routes/category'
 import photoHandler from './routes/photo'
 import userHandler from './routes/user'
 import authPlugin from './plugins/auth'
+import { queryStringToFilters } from './utils'
 
 require('dotenv').config()
 
@@ -21,6 +23,9 @@ const server: FastifyInstance<
   ignoreTrailingSlash: true,
   logger: {
     prettyPrint: { colorize: true }
+  },
+  querystringParser: query => {
+    return queryStringToFilters(query) // parse query string to mongodb filters with operators
   }
 })
 

@@ -9,3 +9,10 @@ export interface IPhoto extends Document {
   categories: Array<ICategory['_id']>,
   dominantColors: Array<string>,
 }
+
+export interface IPhotoQueryFilters {
+  limit: number,
+  page: number,
+  dominantColors: object,
+  categories: object
+}

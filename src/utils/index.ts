@@ -30,7 +30,7 @@ export const queryStringToFilters = (queryString: string): any => {
         filters[key] = { $in: parsedValue }
       } else if (isObject(parsedValue)) { // if it's an object this implies that the match should be with comparison operators
         filters[key] = mapKeys(parsedValue, (v, k) => {
-          return k.replace(/\b(eq|ne|not|gt|gte|lt|lte|in|nin)\b/g, '$$' + '$1')
+          return k.replace(/\b(eq|ne|not|gt|gte|lt|lte|in|nin|all)\b/g, '$$' + '$1')
         })
       } else { // we just use the parsed value
         filters[key] = parsedValue

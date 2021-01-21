@@ -1,6 +1,7 @@
 import FreelanceModel from '../models/User/Freelance'
 import PhotoModel from '../models/Photo'
 import { ICategory } from './../interfaces/category'
+import { IPhotoQueryFilters } from './../interfaces/photo'
 import { IUser } from './../interfaces/user'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import cloudinary from './../config/cloudinary'
@@ -26,23 +27,21 @@ type ExtendedFastifyRequest = FastifyRequest<{
 }>
 
 type QueryFastifyRequest = FastifyRequest<{
-  Querystring: {
-    limit: number,
-    page: number
-  }
+  Querystring: IPhotoQueryFilters
 }>
+
 /**
  * CONTROLLER
  */
 const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
   try {
-    const { limit, page } = request.query
+    const { limit, page, ...filters } = request.query
     const skip: number = limit * (page - 1)
 
-    const photosCount = await PhotoModel.countDocuments()
+    const photosCount = await PhotoModel.find(filters).countDocuments()
     const hasMoreResults = photosCount - (limit * page) > 0
 
-    const photos = await PhotoModel.find({}, '-__v -createdAt -updatedAt')
+    const photos = await PhotoModel.find(filters, '-__v -createdAt -updatedAt')
       .populate('categories', '-__v -createdAt -updatedAt')
       .populate('user', '-__v -createdAt -updatedAt -password')
       .skip(skip)
@@ -51,7 +50,7 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
       .lean()
 
     reply.send({
-      photos, hasMoreResults
+      photos, hasMoreResults, total: photosCount
     })
   } catch (error) {
     reply.log.error('error getAll photos: ', error)

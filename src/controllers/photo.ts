@@ -44,7 +44,7 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
 
     const photos = await PhotoModel.find({}, '-__v -createdAt -updatedAt')
       .populate('categories', '-__v -createdAt -updatedAt')
-      .populate('user', '-__v -createdAt -updatedAt')
+      .populate('user', '-__v -createdAt -updatedAt -password')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })

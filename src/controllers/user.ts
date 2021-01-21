@@ -85,6 +85,32 @@ const getOne = async (request: IdParamRequest, reply: FastifyReply) => {
   }
 }
 
+const getAuthOne = async (request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    // Check if the user sending the request is the owner of the user data to update
+    const credentials: any = request.user
+    if (!credentials.id) {
+      reply.status(401)
+      return reply.send('Not authorised')
+    }
+
+    const user = await UserModel.findById(credentials.id).select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 })
+      .populate('photos', '-__v -createdAt -updatedAt')
+      .lean()
+
+    if (!user || user.isDeactivated) {
+      reply.status(404)
+      return reply.send('User not found')
+    }
+
+    reply.send(user)
+  } catch (error) {
+    reply.log.error('error get auth user: ', error)
+    reply.status(500)
+    reply.send({ error: error.message })
+  }
+}
+
 const signUp = async (request: SignUpRequest, reply: FastifyReply) => {
   try {
     const userFound = await UserModel.findOne({ email: request.body.email }, '_id').lean()
@@ -182,6 +208,7 @@ export default {
   deactivate,
   getAll,
   getOne,
+  getAuthOne,
   signUp,
   update
 }

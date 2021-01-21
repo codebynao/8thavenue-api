@@ -11,7 +11,7 @@ type LoginFastifyRequest = FastifyRequest<{
 
 const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise<void> => {
   try {
-    let user = await UserModel.findOne({ email: request.body.email }).select({ __v: 0, createdAt: 0, updatedAt: 0, dateDeactivation: 0 })
+    const user = await UserModel.findOne({ email: request.body.email }).select({ __v: 0, createdAt: 0, updatedAt: 0, dateDeactivation: 0 })
 
     // Check if user credentials are valid
     if (!user || !bcrypt.compareSync(request.body.password, user.password)) {
@@ -28,11 +28,7 @@ const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise
     user.lastConnection = new Date()
     await user.save()
 
-    user = user.toJSON()
-    delete user.password
-    delete user.isDeactivated
-
-    reply.send({ token, user })
+    reply.send(token)
   } catch (error) {
     reply.log.error('error login user: ', error)
     reply.status(500)

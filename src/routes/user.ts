@@ -126,6 +126,8 @@ export default (server: FastifyInstance, options: Object, next: Function) => {
 
   server.get('/:id', userController.getOne)
 
+  server.get('/auth', { preHandler: [server.authenticate] }, userController.getAuthOne)
+
   server.post(
     '/',
     {

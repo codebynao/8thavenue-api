@@ -1,6 +1,7 @@
 import { ISignUp, IUser, IFreelance, ICredentials, IUserQueryFilters } from '../interfaces/user'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import FreelanceModel from '../models/User/Freelance'
+import PhotoModel from '../models/Photo'
 import UserModel from '../models/User'
 import { USER_TYPES, MAX_ALL_USERS_PHOTOS } from '../config/constants'
 import bcrypt from 'bcrypt-nodejs'
@@ -196,7 +197,8 @@ const deactivate = async (request: ExtendedFastifyRequest, reply: FastifyReply) 
       reply.status(404)
       return reply.send('User not found')
     }
-    await UserModel.findByIdAndUpdate({ _id: request.params.id }, { $set: { isDeactivated: true, dateDeactivation: new Date() } })
+    await UserModel.findByIdAndUpdate({ _id: user._id }, { $set: { isDeactivated: true, dateDeactivation: new Date() } })
+    await PhotoModel.updateMany({ user: user._id }, { $set: { isHidden: true } })
     reply.send(true)
   } catch (error) {
     reply.log.error('error deactivate user: ', error)

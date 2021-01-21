@@ -8,6 +8,7 @@ export interface IPhoto extends Document {
   isDisplayed: boolean,
   categories: Array<ICategory['_id']>,
   dominantColors: Array<string>,
+  isHidden: boolean
 }
 
 export interface IPhotoQueryFilters {

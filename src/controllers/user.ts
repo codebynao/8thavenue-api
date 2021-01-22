@@ -5,6 +5,7 @@ import PhotoModel from '../models/Photo'
 import UserModel from '../models/User'
 import { USER_TYPES, MAX_ALL_USERS_PHOTOS } from '../config/constants'
 import bcrypt from 'bcrypt-nodejs'
+import httpErrors from 'http-errors'
 
 /**
  * REQUEST TYPES
@@ -61,8 +62,7 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
     reply.send({ users, hasMoreResults })
   } catch (error) {
     reply.log.error('error getAll users: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -75,14 +75,12 @@ const getOne = async (request: IdParamRequest, reply: FastifyReply) => {
       .populate('photos', '-__v -createdAt -updatedAt')
       .lean()
     if (!user || user.isDeactivated) {
-      reply.status(404)
-      return reply.send('User not found')
+      return reply.send(httpErrors(404, 'User not found'))
     }
     reply.send(user)
   } catch (error) {
     reply.log.error('error get user: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -91,8 +89,7 @@ const getAuthOne = async (request: FastifyRequest, reply: FastifyReply) => {
     // Check if the user sending the request is the owner of the user data to update
     const credentials: any = request.user
     if (!credentials.id) {
-      reply.status(401)
-      return reply.send('Not authorised')
+      return reply.send(httpErrors(403))
     }
 
     const user = await UserModel.findById(credentials.id).select({ __v: 0, createdAt: 0, updatedAt: 0, password: 0 })
@@ -100,15 +97,13 @@ const getAuthOne = async (request: FastifyRequest, reply: FastifyReply) => {
       .lean()
 
     if (!user || user.isDeactivated) {
-      reply.status(404)
-      return reply.send('User not found')
+      return reply.send(httpErrors(404, 'User not found'))
     }
 
     reply.send(user)
   } catch (error) {
     reply.log.error('error get auth user: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -116,8 +111,7 @@ const signUp = async (request: SignUpRequest, reply: FastifyReply) => {
   try {
     const userFound = await UserModel.findOne({ email: request.body.email }, '_id').lean()
     if (userFound) {
-      reply.status(400)
-      return reply.send('Email address already registered')
+      return reply.send(httpErrors(400, 'Email address already registered'))
     }
 
     // Hash the password
@@ -142,8 +136,7 @@ const signUp = async (request: SignUpRequest, reply: FastifyReply) => {
     reply.send({ token, user })
   } catch (error) {
     reply.log.error('error sign up user: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -152,16 +145,14 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     // Check if the user sending the request is the owner of the user data to update
     const credentials: any = request.user
     if (!credentials.id || credentials.id !== request.params.id) {
-      reply.status(401)
-      return reply.send('Not authorised')
+      return reply.send(httpErrors(403))
     }
 
     const user = await UserModel.findById(
       request.params.id
     ).lean()
     if (!user || user.isDeactivated) {
-      reply.status(404)
-      return reply.send('User not found')
+      return reply.send(httpErrors(404, 'User not found'))
     }
 
     delete request.body.updatedAt
@@ -178,8 +169,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     reply.send(updatedUser)
   } catch (error) {
     reply.log.error('error update user: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -188,22 +178,19 @@ const deactivate = async (request: ExtendedFastifyRequest, reply: FastifyReply) 
     // Check if the user sending the request is the owner of the user data to update
     const credentials: any = request.user
     if (!credentials.id || credentials.id !== request.params.id) {
-      reply.status(401)
-      return reply.send('Not authorised')
+      return reply.send(httpErrors(403))
     }
 
     const user = await UserModel.findById(request.params.id).lean()
     if (!user) {
-      reply.status(404)
-      return reply.send('User not found')
+      return reply.send(httpErrors(404, 'User not found'))
     }
     await UserModel.findByIdAndUpdate({ _id: user._id }, { $set: { isDeactivated: true, dateDeactivation: new Date() } })
     await PhotoModel.updateMany({ user: user._id }, { $set: { isHidden: true } })
     reply.send(true)
   } catch (error) {
     reply.log.error('error deactivate user: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 export default {

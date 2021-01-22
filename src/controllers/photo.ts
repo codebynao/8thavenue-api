@@ -6,6 +6,7 @@ import { IUser } from './../interfaces/user'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import cloudinary from './../config/cloudinary'
 import md5 from 'crypto-js/md5'
+import httpErrors from 'http-errors'
 
 /**
  * TYPES
@@ -54,8 +55,7 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
     })
   } catch (error) {
     reply.log.error('error getAll photos: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -63,8 +63,7 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
     const credentials: any = request.user
     if (!credentials.id || credentials.id !== request.body.user) {
-      reply.status(401)
-      return reply.send('Not authorised')
+      return reply.send(httpErrors(403))
     }
 
     const hash = md5(Date.now() + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5))
@@ -75,9 +74,7 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
 
     if (uploadResponse.url === undefined) {
       reply.log.error(uploadResponse)
-      reply.status(500)
-      reply.send({ success: false, error: 'Error while uploading the image' })
-      return
+      return reply.send(httpErrors(500, 'Error while uploading the image'))
     }
     request.body.url = uploadResponse.url
     const createdPhoto = await PhotoModel.create(request.body)
@@ -90,8 +87,7 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     reply.send(photo)
   } catch (error) {
     reply.log.error('error add photo: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -99,14 +95,12 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
     const credentials: any = request.user
     if (!credentials.id || credentials.id !== request.body.user) {
-      reply.status(401)
-      return reply.send('Not authorised')
+      return reply.send(httpErrors(403))
     }
 
     let photo = await PhotoModel.findById(request.params.id)
     if (!photo) {
-      reply.status(404)
-      reply.send('Photo not found')
+      return reply.send(httpErrors(404, 'Photo not found'))
     }
     photo = Object.assign(photo, request.body)
     await photo.save()
@@ -114,8 +108,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     reply.send(photo)
   } catch (error) {
     reply.log.error('error update photo: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -123,14 +116,12 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
     const photo = await PhotoModel.findById(request.params.id, 'user').lean()
     if (!photo) {
-      reply.status(404)
-      reply.send('Photo not found')
+      return reply.send(httpErrors(404, 'Photo not found'))
     }
 
     const credentials: any = request.user
     if (!credentials.id || credentials.id !== photo.user.toString()) {
-      reply.status(401)
-      return reply.send('Not authorised')
+      return reply.send(httpErrors(403))
     }
 
     await PhotoModel.deleteOne({ _id: request.params.id })
@@ -141,8 +132,7 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     reply.send(true)
   } catch (error) {
     reply.log.error('error delete photo: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 

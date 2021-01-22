@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import UserModel from '../models/User'
 import bcrypt from 'bcrypt-nodejs'
+import httpErrors from 'http-errors'
 
 type LoginFastifyRequest = FastifyRequest<{
   Body: {
@@ -15,11 +16,11 @@ const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise
 
     // Check if user credentials are valid
     if (!user || !bcrypt.compareSync(request.body.password, user.password)) {
-      throw new Error('Invalid email and/or password.')
+      return reply.send(httpErrors(401, 'Invalid email and/or password.'))
     }
 
     if (user.isDeactivated) {
-      throw new Error('Account deactivated. Contact admins to reactivate it.')
+      return reply.send(httpErrors(401, 'Account deactivated. Contact admins to reactivate it.'))
     }
 
     // Generate JWT token
@@ -31,8 +32,7 @@ const login = async (request: LoginFastifyRequest, reply: FastifyReply): Promise
     reply.send(token)
   } catch (error) {
     reply.log.error('error login user: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 

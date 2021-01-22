@@ -1,5 +1,5 @@
 import qs from 'qs'
-import { isArray, mapKeys, isObject } from 'lodash'
+import { isArray, transform, isObject } from 'lodash'
 
 const parse = (value: any): any => {
   try {
@@ -29,8 +29,9 @@ export const queryStringToFilters = (queryString: string): any => {
       if (isArray(parsedValue)) { // if it's an array this implies that the match should be with $in operator
         filters[key] = { $in: parsedValue }
       } else if (isObject(parsedValue)) { // if it's an object this implies that the match should be with comparison operators
-        filters[key] = mapKeys(parsedValue, (v, k) => {
-          return k.replace(/\b(eq|ne|not|gt|gte|lt|lte|in|nin|all)\b/g, '$$' + '$1')
+        filters[key] = transform(parsedValue, (r: any, v: any, k: string) => {
+          const newKey = k.replace(/\b(eq|ne|not|gt|gte|lt|lte|in|nin|all)\b/g, '$$' + '$1')
+          r[newKey] = parse(v)
         })
       } else { // we just use the parsed value
         filters[key] = parsedValue

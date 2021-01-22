@@ -4,7 +4,8 @@ import { FastifyInstance } from 'fastify'
 const categorySchema = {
   _id: { type: 'string' },
   slug: { type: 'string' },
-  isActivated: { type: 'boolean' }
+  isActivated: { type: 'boolean' },
+  labels: { type: 'array' }
 }
 
 const paramsSchema = {

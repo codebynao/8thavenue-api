@@ -1,5 +1,6 @@
 import CategoryModel from '../models/Category'
 import { FastifyRequest, FastifyReply } from 'fastify'
+import httpErrors from 'http-errors'
 
 /**
  * TYPES
@@ -20,11 +21,10 @@ type ExtendedFastifyRequest = FastifyRequest<{
  */
 const getAll = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
-    reply.send(await CategoryModel.find({}, 'slug isActivated').lean())
+    return reply.send(await CategoryModel.find({}, 'slug isActivated').lean())
   } catch (error) {
     reply.log.error('error getAll categories: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -38,8 +38,7 @@ const add = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     })
   } catch (error) {
     reply.log.error('error add category: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -50,8 +49,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
       'slug isActivated'
     )
     if (!category) {
-      reply.status(404)
-      reply.send('Category not found')
+      return reply.send(httpErrors(404, 'Category not found'))
     }
 
     category.slug = request.body.slug
@@ -62,8 +60,7 @@ const update = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
     reply.send(category)
   } catch (error) {
     reply.log.error('error update category: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 
@@ -71,15 +68,13 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   try {
     const category = await CategoryModel.findById(request.params.id).lean()
     if (!category) {
-      reply.status(404)
-      reply.send('Category not found')
+      return reply.send(httpErrors(404, 'Category not found'))
     }
     await CategoryModel.deleteOne({ _id: request.params.id })
     reply.send(true)
   } catch (error) {
     reply.log.error('error delete category: ', error)
-    reply.status(500)
-    reply.send({ error: error.message })
+    reply.send(httpErrors(500, error.message))
   }
 }
 export default {

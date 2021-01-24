@@ -1,6 +1,7 @@
 import CategoryModel from '../models/Category'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import httpErrors from 'http-errors'
+import { ILabel } from '../interfaces/category'
 
 /**
  * TYPES
@@ -17,12 +18,27 @@ type ExtendedFastifyRequest = FastifyRequest<{
   }
 }>
 
+type QueryFastifyRequest = FastifyRequest<{
+  Querystring: {
+    locale: string
+  }
+}>
+
 /**
  * CONTROLLER
  */
-const getAll = async (request: FastifyRequest, reply: FastifyReply) => {
+const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
   try {
-    return reply.send(await CategoryModel.find({}, 'slug isActivated labels').lean())
+    const categories = await CategoryModel.find({}, 'slug isActivated labels').lean()
+    const locale = request.query.locale || 'en'
+    for (const category of categories) {
+      const label = category.labels.find((item: ILabel) => item.locale === locale)
+      if (label) {
+        category.name = label.value
+      }
+    }
+
+    reply.send(categories)
   } catch (error) {
     reply.log.error('error getAll categories: ', error)
     reply.send(httpErrors(500, error.message))

@@ -21,6 +21,7 @@ const server: FastifyInstance<
   ServerResponse
 > = fastify({
   ignoreTrailingSlash: true,
+  bodyLimit: 6291456,
   logger: {
     prettyPrint: { colorize: true }
   },

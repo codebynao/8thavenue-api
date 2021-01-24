@@ -1,5 +1,7 @@
 import qs from 'qs'
 import { isArray, transform, isObject } from 'lodash'
+import cloudinary from './../config/cloudinary'
+import md5 from 'crypto-js/md5'
 
 const parse = (value: any): any => {
   try {
@@ -42,4 +44,11 @@ export const queryStringToFilters = (queryString: string): any => {
   } catch (error) {
     return {}
   }
+}
+
+export const uploadPhotoToCloudinary = async (fileEncoded: string, folder: string) => {
+  const hash = md5(Date.now() + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5))
+  return await cloudinary.uploader.upload(fileEncoded, {
+    public_id: `${folder}/${hash}`
+  })
 }

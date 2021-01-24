@@ -14,12 +14,13 @@ const config = {
   },
   LIMIT_QUERY_RESULTS: 20,
   LINKS_NAMES: ['website', 'instagram', 'twitter', 'pinterest'],
+  MAX_ALL_USERS_PHOTOS: 6,
   MIN_PASSWORD_LENGTH: 8,
+  USER_PHOTO_TYPES: ['banner', 'profilePicture'],
   USER_TYPES: {
     CLIENT: 'client',
     FREELANCE: 'freelance'
-  },
-  MAX_ALL_USERS_PHOTOS: 6
+  }
 }
 
 config.FREELANCE_PLANS_VALUES = Object.values(config.FREELANCE_PLANS).map(plan => plan.value)

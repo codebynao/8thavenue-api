@@ -1,6 +1,6 @@
 import photoController from '../controllers/photo'
 import { FastifyInstance } from 'fastify'
-import { LIMIT_QUERY_RESULTS } from '../config/constants'
+import { LIMIT_QUERY_RESULTS, USER_PHOTO_TYPES } from '../config/constants'
 
 const photoSchema = {
   _id: { type: 'string' },
@@ -29,6 +29,16 @@ const bodyUpdateSchema = {
   type: 'object',
   properties: photoSchema,
   required: []
+}
+
+const userPhotoBodySchema = {
+  type: 'object',
+  properties: {
+    photoType: { type: 'string', enum: USER_PHOTO_TYPES },
+    fileEncoded: { type: 'string' },
+    user: { type: 'string' }
+  },
+  required: ['photoType', 'fileEncoded', 'user']
 }
 
 const responseSchema = {
@@ -86,5 +96,11 @@ export default (server: FastifyInstance, options: Object, next: Function) => {
     },
     preHandler: [server.authenticate]
   }, photoController.remove)
+  server.post('/user', {
+    schema: {
+      body: userPhotoBodySchema
+    },
+    preHandler: [server.authenticate]
+  }, photoController.updateUserPhoto)
   next()
 }

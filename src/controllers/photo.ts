@@ -4,9 +4,8 @@ import { ICategory } from './../interfaces/category'
 import { IPhotoQueryFilters } from './../interfaces/photo'
 import { IUser } from './../interfaces/user'
 import { FastifyRequest, FastifyReply } from 'fastify'
-import cloudinary from './../config/cloudinary'
-import md5 from 'crypto-js/md5'
 import httpErrors from 'http-errors'
+import { uploadPhotoToCloudinary } from '../utils'
 
 /**
  * TYPES
@@ -24,6 +23,14 @@ type ExtendedFastifyRequest = FastifyRequest<{
     dominantColors: Array<string>,
     fileEncoded: string,
     fileName: string
+  }
+}>
+
+type UserPhotoFastifyRequest = FastifyRequest<{
+  Body: {
+    photoType: string
+    fileEncoded: string,
+    user: string
   }
 }>
 
@@ -66,11 +73,7 @@ const post = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
       return reply.send(httpErrors(403))
     }
 
-    const hash = md5(Date.now() + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5))
-    const fileEncoded : string = request.body.fileEncoded
-    const uploadResponse = await cloudinary.uploader.upload(fileEncoded, {
-      public_id: `photography/${hash}`
-    })
+    const uploadResponse = await uploadPhotoToCloudinary(request.body.fileEncoded, 'photography')
 
     if (uploadResponse.url === undefined) {
       reply.log.error(uploadResponse)
@@ -136,9 +139,36 @@ const remove = async (request: ExtendedFastifyRequest, reply: FastifyReply) => {
   }
 }
 
+const updateUserPhoto = async (request: UserPhotoFastifyRequest, reply: FastifyReply) => {
+  try {
+    const credentials: any = request.user
+    if (!credentials.id || credentials.id !== request.body.user) {
+      return reply.send(httpErrors(403))
+    }
+
+    const uploadResponse = await uploadPhotoToCloudinary(request.body.fileEncoded, 'user')
+    if (uploadResponse.url === undefined) {
+      reply.log.error(uploadResponse)
+      return reply.send(httpErrors(500, 'Error while uploading the image'))
+    }
+
+    const updatedUser = await FreelanceModel.findByIdAndUpdate(
+      request.body.user,
+      { $set: { [request.body.photoType]: uploadResponse.url } },
+      { new: true, fields: { __v: 0, createdAt: 0, updatedAt: 0, password: 0 } }
+    ).populate([{ path: 'photos' }, { path: 'specialties' }])
+
+    reply.send(updatedUser)
+  } catch (error) {
+    reply.log.error('error update photo: ', error)
+    reply.send(httpErrors(500, error.message))
+  }
+}
+
 export default {
   getAll,
   post,
   update,
-  remove
+  remove,
+  updateUserPhoto
 }

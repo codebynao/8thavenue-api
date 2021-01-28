@@ -7,6 +7,8 @@ import { USER_TYPES, MAX_ALL_USERS_PHOTOS } from '../config/constants'
 import bcrypt from 'bcrypt-nodejs'
 import httpErrors from 'http-errors'
 
+const ObjectId = require('mongoose').Types.ObjectId
+
 /**
  * REQUEST TYPES
  */
@@ -40,6 +42,12 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
   const { limit, page, ...filters } = query
   const skip: number = limit * (page - 1)
 
+  // @ts-ignore
+  if (filters.specialties && filters.specialties.$in && filters.specialties.$in.length > 0) {
+    // @ts-ignore
+    filters.specialties.$in = filters.specialties.$in.map((id) => ObjectId(id))
+  }
+
   const queryFilters = {
     ...filters,
     isDeactivated: false // we ensure to have only non deactivated accounts
@@ -47,6 +55,7 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
 
   try {
     const usersCount = await await UserModel.find(queryFilters).countDocuments()
+
     const users = await UserModel.find(
       queryFilters,
       { photos: { $slice: MAX_ALL_USERS_PHOTOS } } // we set a maximum of `MAX_ALL_USERS_PHOTOS` for photos

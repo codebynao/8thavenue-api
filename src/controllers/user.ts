@@ -48,6 +48,14 @@ const getAll = async (request: QueryFastifyRequest, reply: FastifyReply) => {
     filters.specialties.$in = filters.specialties.$in.map((id) => ObjectId(id))
   }
 
+  if (filters.localisation && filters.localisation.country) {
+    // @ts-ignore
+    filters['localisation.country'] = filters.localisation.country
+
+    // @ts-ignore
+    delete filters.localisation
+  }
+
   const queryFilters = {
     ...filters,
     isDeactivated: false // we ensure to have only non deactivated accounts
